@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react';
 import { useForm } from '@mantine/form';
-import { TextInput, Button, Select, Alert } from '@mantine/core';
+import { TextInput, Button, Select, Alert, NumberInput } from '@mantine/core';
 import { useSignupUserMutation } from '../api/apiSlice';
 import { notifications } from '@mantine/notifications';
 import { useRouter } from 'next/navigation';
@@ -36,8 +36,8 @@ export const SignupForm = () => {
         message: 'Your account has been created successfully.',
         color: 'green',
       });
-  router.push('/login')
-    } catch (err:any) {
+      router.push('/login')
+    } catch (err: any) {
       setError(err.data?.message || 'Something went wrong. Please try again.');
       notifications.show({
         title: 'Something went wrong',
@@ -53,7 +53,7 @@ export const SignupForm = () => {
         <h2 className=" text-xxl font-semibold mb-6 text-center text-blue-700">Signup</h2>
         {error && <Alert color="red" className="mb-4">{error}</Alert>}
         <form onSubmit={form.onSubmit(handleSubmit)}>
-        <TextInput
+          <TextInput
             label="Name"
             placeholder="Enter your name"
             {...form.getInputProps('name')}
@@ -78,17 +78,16 @@ export const SignupForm = () => {
             label="Role"
             data={[
               { value: 'user', label: 'User' },
-              { value: 'hostel_owner', label: 'Hostel Owner' },
+              { value: 'hostelowner', label: 'Hostel Owner' },
               { value: 'warden', label: 'Warden' },
             ]}
             {...form.getInputProps('role')}
             className="mb-4"
           />
-          <TextInput
+          <NumberInput
             label="Contact Number"
             placeholder="Enter your contact number"
             {...form.getInputProps('contact_no')}
-            type='number'
             required
             className="mb-4"
           />

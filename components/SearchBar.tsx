@@ -12,14 +12,20 @@ const SearchBar = ({ onSearch }: SearchBarProps) => {
   const handleSearch = () => {
     onSearch(searchQuery);
   };
-
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
+  }
   return (
     <div className="p-4 flex flex-col">
       <Input
         placeholder="Search Tenants"
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        classNames={{ root: 'mb-2', input: 'p-2' }}
+        onChange={(e) => {setSearchQuery(e.target.value)
+        }}
+        onKeyDown={handleKeyPress}
+        classNames={{ wrapper: 'mb-2', input: 'p-2' }}
       />
       <Button onClick={handleSearch} className="bg-blue-500 text-white">
         Search

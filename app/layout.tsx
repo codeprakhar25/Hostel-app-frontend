@@ -7,6 +7,7 @@ import { theme } from "../theme";
 import { Provider } from "react-redux";
 import { store } from "../api/store";
 import "./globals.css";
+import '@mantine/dates/styles.css'
 
 export default function RootLayout({ children }: { children: any }) {
   return (

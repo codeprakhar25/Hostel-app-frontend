@@ -1,7 +1,7 @@
 'use client'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const baseUrl = 'http://127.0.0.1:8000'; // Replace with your backend URL
+const baseUrl = 'http://prakhar2004.pythonanywhere.com/'; // Replace with your backend URL
 
 const prepareHeaders = (headers: Headers) => {
   const token = localStorage.getItem('token');
@@ -33,31 +33,52 @@ export const apiSlice = createApi({
 
     // Tenant Endpoints
     getTenants: builder.query({
-      query: () => `api/tenants/`
-        // const searchParams = new URLSearchParams();
-        // if (search) searchParams.append('search', search);
-        // Object.keys(filter).forEach(key => searchParams.append(key, filter[key]));
-        // if (sort) searchParams.append('ordering', sort);
-        // return { url: `api/tenants/?${searchParams.toString()}`};
+      query: (searchParam? : string, filterTerm? : string, sortTerm? :string) => `api/tenants/?search`
       ,
     }),
     getTenantById: builder.query({
       query: (id) => `api/tenants/${id}/`,
     }),
-    getTenantsByHostel: builder.query({
-      query: (hostelId) => `api/tenants/by-hostel/?hostel_id=${hostelId}`,
+    getTenantByHostel: builder.query({
+      query: (hostelId) => `api/tenants/by_hostel/?hostel_id=${hostelId}`,
+      // transformResponse: (response: { results: any[] }) => response.results,
     }),
-    getTenantsByRoom: builder.query({
-      query: (roomId) => `api/tenants/by-room/?room_id=${roomId}`,
+
+    // Get tenants by room
+    getTenantByRoom: builder.query({
+      query: (roomId) => `api/tenants/by_room/?room_id=${roomId}`,
+      transformResponse: (response: { results: any[] }) => response.results,
     }),
+
+    getPendingTenants: builder.query({
+      query: (hostelId) => `api/tenants/due-date-passed-by-hostel/?hostel_id=${hostelId}`,
+    }),
+
+    // Get rents for a tenant
     getTenantRents: builder.query({
       query: (tenantId) => `api/tenants/${tenantId}/rents/`,
+      transformResponse: (response: { results: any[] }) => response.results,
     }),
+
+    // Get attachments for a tenant
     getTenantAttachments: builder.query({
       query: (tenantId) => `api/tenants/${tenantId}/attachments/`,
+      transformResponse: (response: { results: any[] }) => response.results,
+    }),
+
+    // Get all rents
+    getRents: builder.query({
+      query: () => '/rents/',
+      transformResponse: (response: { results: any[] }) => response.results,
+    }),
+
+    // Get all attachments
+    getAttachments: builder.query({
+      query: () => '/attachments/',
+      transformResponse: (response: { results: any[] }) => response.results,
     }),
     createTenant: builder.mutation({
-      query: (newTenant: { name: string; contactNumber: string; documentNumber: string; guardianName: string; guardianContact: string; rent: number; roomNumber: string; bedNumber: string; deposit: number; electricityReading?: number; electricityPPU?: number; assetName?: string; assetUnit?: string }) => ({
+      query: (newTenant: any) => ({
         url: 'api/tenants/',
         method: 'POST',
         body: newTenant,
@@ -77,15 +98,19 @@ export const apiSlice = createApi({
       }),
     }),
 
+
+    // Rent
+    collectRent: builder.mutation({
+      query: (data) => ({
+        url: `api/rents/`,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
     // Hostel Endpoints
     getHostels: builder.query({
-      query: ({ search = '', filter = {}, sort = '' }: { search?: string; filter?: Record<string, string>; sort?: string }) => {
-        const searchParams = new URLSearchParams();
-        if (search) searchParams.append('search', search);
-        Object.keys(filter).forEach(key => searchParams.append(key, filter[key]));
-        if (sort) searchParams.append('ordering', sort);
-        return { url: `api/hostels/?${searchParams.toString()}` };
-      },
+      query: () => `api/hostels/`,
     }),
     getHostelById: builder.query({
       query: (id: string) => `api/hostels/${id}/`,
@@ -138,6 +163,9 @@ export const apiSlice = createApi({
         body: data,
       }),
     }),
+    getHostelRooms: builder.query({
+      query: (id: string) => `api/hostels/${id}/rooms/`,
+    }),
     deleteRoom: builder.mutation({
       query: (id: string) => ({
         url: `api/rooms/${id}/`,
@@ -153,9 +181,10 @@ export const {
   useSignupUserMutation,
   useGetTenantsQuery,
   useGetTenantByIdQuery,
-  useGetTenantsByHostelQuery,
-  useGetTenantsByRoomQuery,
+  useGetTenantByHostelQuery,
+  useGetTenantByRoomQuery,
   useGetTenantRentsQuery,
+  useCollectRentMutation,
   useGetTenantAttachmentsQuery,
   useCreateTenantMutation,
   useUpdateTenantMutation,
@@ -163,7 +192,9 @@ export const {
   useGetHostelsQuery,
   useGetHostelByIdQuery,
   useCreateHostelMutation,
+  useGetHostelRoomsQuery,
   useUpdateHostelMutation,
+  useGetPendingTenantsQuery,
   useDeleteHostelMutation,
   useGetRoomsQuery,
   useGetRoomByIdQuery,

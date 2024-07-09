@@ -25,7 +25,6 @@ export default function LoginPage() {
   const handleSubmit = async (values: LoginFormValues) => {
     try {
       const response = await loginUser(values).unwrap()
-      console.log("object",response?.token?.access)
       localStorage.setItem('token', response?.token?.access)
       router.push('/home')
     } catch (err) {

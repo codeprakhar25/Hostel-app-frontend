@@ -1,54 +1,219 @@
+'use client'
 
-import { useForm } from '@mantine/form';
-import { Button, Group } from '@mantine/core';
-import FormField from './FormField';
 import { useState } from 'react';
+import { useForm } from '@mantine/form';
+import { Button, Group, Notification, NumberInput, Select, TextInput } from '@mantine/core';
+import { DatePicker, DatePickerInput } from '@mantine/dates';
+// import TextInput from './FormField';
+import { useCreateTenantMutation } from '@/api/apiSlice';  // Adjust this import as per your API slice setup
+import '@mantine/dates/styles.css'
+import { formatDate } from '@/utils/formatDate';
+import { useRouter } from 'next/navigation';
 
-const TenantCheckInForm = () => {
+const RENT_FREQUENCY_CHOICES = [
+  'daily',
+  'weekly',
+  'fortnight',
+  'monthly',
+  'bimonthly',
+  'quarterly',
+  'half_yearly',
+  'yearly',
+];
+
+const TenantCheckInForm = ({ hostelId }: any) => {
   const [electricityOn, setElectricityOn] = useState(false);
   const [assetsOn, setAssetsOn] = useState(false);
-
+  const router = useRouter()
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationType, setNotificationType] = useState('success');
+  const [createTenant, { isLoading }] = useCreateTenantMutation();
   const form = useForm({
     initialValues: {
-      tenantName: '',
-      contactNumber: '',
-      documentNumber: '',
-      guardianName: '',
-      guardianContactNumber: '',
-      rentAmount: '',
-      roomNumber: '',
-      bedNumber: '',
-      depositAmount: '',
-      electricityReading: '',
-      electricityPPU: '',
-      assetName: '',
-      assetUnit: '',
+      name: '',
+      phone_number: null,
+      aadhar_number: null,
+      pan_number: null,
+      father_name: '',
+      father_phone_number: null,
+      mother_name: '',
+      mother_phone_number: null,
+      rent_amount: null,
+      deposit_amount: null,
+      room: '',
+      bed_number: null,
+      electricity_reading: '',
+      electricity_ppu: '',
+      asset_name: '',
+      hostel: hostelId,
+      asset_unit: '',
+      start_date: null,
+      rent_frequency: '',
+      next_due_date:null,
     },
     validate: {
-      tenantName: (value) => (value ? null : 'Tenant Name is required'),
-      contactNumber: (value) => (value ? null : 'Contact Number is required'),
-      rentAmount: (value) => (value ? null : 'Rent Amount is required'),
+      name: (value) => (value ? null : 'Name is required'),
+      phone_number: (value) => (value ? null : 'Phone Number is required'),
+      rent_amount: (value) => (value ? null : 'Rent Amount is required'),
+      start_date: (value) => (value ? null : 'Start Date is required'),
+      rent_frequency: (value) => (value ? null : 'Rent Frequency is required'),
     },
   });
 
-  const handleSubmit = (values: any) => {
-    console.log('Form Submitted', values);
+  const handleSubmit = async (values: any) => {
+    try {
+      await createTenant({
+        ...values,
+        hostel_id : hostelId,
+        start_date: formatDate(values.start_date), // Convert to string for backend
+        next_due_date: formatDate(values.next_due_date), // Convert to string for backend
+      }).unwrap();
+
+      setNotificationMessage('Tenant checked in successfully');
+      setNotificationType('success');
+      setShowNotification(true);
+
+      // Reset form after successful submission
+      form.reset();
+      router.push(`/${hostelId}/tenants`)
+    } catch (error) {
+      setNotificationMessage('Error checking in tenant');
+      setNotificationType('error');
+      setShowNotification(true);
+    }
   };
 
   return (
-    <form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
-      <FormField label="Tenant Name" name="tenantName" type="text" placeholder="Enter Tenant Name" required error={form.errors.tenantName} />
-      <FormField label="Contact Number" name="contactNumber" type="text" placeholder="Enter Contact Number" required error={form.errors.contactNumber} />
-      <FormField label="Document Number" name="documentNumber" type="text" placeholder="Enter Document Number" />
-      <FormField label="Guardian Name" name="guardianName" type="text" placeholder="Enter Guardian Name" />
-      <FormField label="Guardian Contact Number" name="guardianContactNumber" type="text" placeholder="Enter Guardian Contact Number" />
-      <FormField label="Rent Amount" name="rentAmount" type="text" placeholder="Enter Rent Amount" required error={form.errors.rentAmount} />
-      <FormField label="Room Number" name="roomNumber" type="text" placeholder="Enter Room Number" />
-      <FormField label="Bed Number" name="bedNumber" type="text" placeholder="Enter Bed Number" />
-      <FormField label="Deposit Amount" name="depositAmount" type="text" placeholder="Enter Deposit Amount" />
-
+    <form onSubmit={form.onSubmit(handleSubmit)}>
+      <TextInput
+        label="Name"
+        name="name"
+        type="text"
+        placeholder="Enter Tenant Name"
+        required
+        error={form.errors.name}
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('name')}
+      />
+      <NumberInput
+        label="Phone Number"
+        name="phone_number"
+        placeholder="Enter Phone Number"
+        required
+        error={form.errors.phone_number}
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('phone_number')}
+      />
+      <NumberInput
+        label="Aadhar Number"
+        name="aadhar_number"
+        placeholder="Enter Aadhar Number"
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('aadhar_number')}
+      />
+      <NumberInput
+        label="PAN Number"
+        name="pan_number"
+        placeholder="Enter PAN Number"
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('pan_number')}
+      />
+      <TextInput
+        label="Father's Name"
+        name="father_name"
+        type="text"
+        placeholder="Enter Father's Name"
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('father_name')}
+      />
+      <NumberInput
+        label="Father's Phone Number"
+        name="father_phone_number"
+        placeholder="Enter Father's Phone Number"
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('father_phone_number')}
+      />
+      <TextInput
+        label="Mother's Name"
+        name="mother_name"
+        type="text"
+        placeholder="Enter Mother's Name"
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('mother_name')}
+      />
+      <NumberInput
+        label="Mother's Phone Number"
+        name="mother_phone_number"
+        placeholder="Enter Mother's Phone Number"
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('mother_phone_number')}
+      />
+      <NumberInput
+        label="Rent Amount"
+        name="rent_amount"
+        placeholder="Enter Rent Amount"
+        required
+        error={form.errors.rent_amount}
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('rent_amount')}
+      />
+      <NumberInput
+        label="Deposit Amount"
+        name="deposit_amount"
+        placeholder="Enter Deposit Amount"
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('deposit_amount')}
+      />
+      <TextInput
+        label="Room"
+        name="room"
+        type="text"
+        placeholder="Enter Room Number"
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('room')}
+      />
+      <NumberInput
+        label="Bed Number"
+        name="bed_number"
+        placeholder="Enter Bed Number"
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('bed_number')}
+      />
+      <div className="mb-4 mt-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">Start Date</label>
+        <DatePickerInput
+          placeholder="Pick a date" required
+          style={{ marginTop: 15 }}         
+          {...form.getInputProps('start_date')}
+        />
+        {form.errors.start_date && (
+          <div className="text-red-500 text-sm mt-1">{form.errors.start_date}</div>
+        )}
+      </div>
+      <div className="mb-4 mt-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">Next Due Date</label>
+        <DatePickerInput
+          placeholder="Pick a date" required
+          style={{ marginTop: 15 }}         
+          {...form.getInputProps('next_due_date')}
+        />
+        {form.errors.next_due_date && (
+          <div className="text-red-500 text-sm mt-1">{form.errors.next_due_date}</div>
+        )}
+      </div>
+      <Select
+        label="Rent Frequency"
+        name="rent_frequency"
+        placeholder="Select Rent Frequency"
+        required
+        error={form.errors.rent_frequency}
+        data={RENT_FREQUENCY_CHOICES.map((value) => ({ value, label: value.charAt(0).toUpperCase() + value.slice(1).replace('_', ' ') }))}
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('rent_frequency')}
+      />
       <div className="flex items-center justify-between my-4">
-        <FormField label="Electricity" name="electricity" type="switch" placeholder="" />
+
         <Button className={`bg-${electricityOn ? 'blue' : 'gray'}-500 text-white`} onClick={() => setElectricityOn(!electricityOn)}>
           Add Electricity
         </Button>
@@ -56,13 +221,26 @@ const TenantCheckInForm = () => {
 
       {electricityOn && (
         <>
-          <FormField label="Current Reading" name="electricityReading" type="text" placeholder="Enter Current Reading" />
-          <FormField label="PPU" name="electricityPPU" type="text" placeholder="Enter PPU" />
+          <TextInput
+            label="Current Reading"
+            name="electricity_reading"
+            type="text"
+            placeholder="Enter Current Reading"
+
+            style={{ marginTop: 15 }}         {...form.getInputProps('electricity_reading')}
+          />
+          <TextInput
+            label="PPU"
+            name="electricity_ppu"
+            type="text"
+            placeholder="Enter PPU"
+
+            style={{ marginTop: 15 }}         {...form.getInputProps('electricity_ppu')}
+          />
         </>
       )}
 
       <div className="flex items-center justify-between my-4">
-        <FormField label="Assets" name="assets" type="switch" placeholder="" />
         <Button className={`bg-${assetsOn ? 'blue' : 'gray'}-500 text-white`} onClick={() => setAssetsOn(!assetsOn)}>
           Add Assets
         </Button>
@@ -70,16 +248,42 @@ const TenantCheckInForm = () => {
 
       {assetsOn && (
         <>
-          <FormField label="Asset Name" name="assetName" type="text" placeholder="Enter Asset Name" />
-          <FormField label="Asset Unit" name="assetUnit" type="text" placeholder="Enter Asset Unit" />
+          <TextInput
+            label="Asset Name"
+            name="asset_name"
+            type="text"
+            placeholder="Enter Asset Name"
+            style={{ marginTop: 15 }}         
+            {...form.getInputProps('asset_name')}
+          />
+          <TextInput
+            label="Asset Unit"
+            name="asset_unit"
+            type="text"
+            placeholder="Enter Asset Unit"
+            style={{ marginTop: 15 }}         
+            {...form.getInputProps('asset_unit')}
+          />
         </>
       )}
 
-      <Group position="center">
-        <Button type="submit" className="bg-green-500 text-white">
-          CHECK IN
+      <Group align="center" w={'screen'}>
+        <Button type="submit" className="bg-blue-500 text-white align-middle" disabled={isLoading}>
+          {isLoading ? 'Submitting...' : 'CHECK IN'}
         </Button>
       </Group>
+
+      {showNotification && (
+        <div className="fixed bottom-4 right-4">
+          <Notification
+            color={notificationType === 'success' ? 'green' : 'red'}
+            title={notificationType === 'success' ? 'Success' : 'Error'}
+            onClose={() => setShowNotification(false)}
+          >
+            {notificationMessage}
+          </Notification>
+        </div>
+      )}
     </form>
   );
 };

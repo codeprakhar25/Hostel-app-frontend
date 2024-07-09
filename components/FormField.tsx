@@ -1,6 +1,6 @@
 // components/FormField.tsx
 import { TextInput, Switch, Select, NumberInput } from '@mantine/core';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 
 interface FormFieldProps {
   label: string;
@@ -8,7 +8,7 @@ interface FormFieldProps {
   type: string;
   placeholder: string;
   required?: boolean;
-  error?: string;
+  error?: string | ReactNode;
   options?: { label: string; value: string }[];
 }
 
@@ -39,6 +39,7 @@ const FormField = ({
     return (
       <Select
         label={label}
+        style={{marginTop:15}}
         data={options}
         {...inputProps}
       />
@@ -50,6 +51,8 @@ const FormField = ({
       <Switch
         label={label}
         checked={value === 'on'}
+        style={{marginTop:15}}
+
         onChange={(event) => setValue(event.currentTarget.checked ? 'on' : 'off')}
       />
     );
@@ -60,6 +63,8 @@ const FormField = ({
       <NumberInput
         label={label}
         {...inputProps}
+        style={{marginTop:15}}
+
       />
     );
   }
@@ -68,6 +73,8 @@ const FormField = ({
     <TextInput
       label={label}
       name={name}
+      style={{marginTop:15}}
+
       {...inputProps}
     />
   );
