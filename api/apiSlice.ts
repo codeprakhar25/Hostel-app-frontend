@@ -1,7 +1,7 @@
 'use client'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const baseUrl = 'http://prakhar2004.pythonanywhere.com/'; // Replace with your backend URL
+const baseUrl = 'https://prakhar2004.pythonanywhere.com/'; // Replace with your backend URL
 
 const prepareHeaders = (headers: Headers) => {
   const token = localStorage.getItem('token');
