@@ -109,9 +109,10 @@ export const apiSlice = createApi({
     }),
 
     // Hostel Endpoints
-    getHostels: builder.query({
+    getYourHostels: builder.query({
       query: () => `api/hostels/`,
     }),
+
     getHostelById: builder.query({
       query: (id: string) => `api/hostels/${id}/`,
     }),
@@ -189,7 +190,7 @@ export const {
   useCreateTenantMutation,
   useUpdateTenantMutation,
   useDeleteTenantMutation,
-  useGetHostelsQuery,
+  useGetYourHostelsQuery,
   useGetHostelByIdQuery,
   useCreateHostelMutation,
   useGetHostelRoomsQuery,

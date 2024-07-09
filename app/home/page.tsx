@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import { useGetHostelRoomsQuery, useGetHostelsQuery, useGetPendingTenantsQuery, useGetTenantByHostelQuery, useGetTenantsQuery } from '@/api/apiSlice';
+import { useGetHostelRoomsQuery, useGetPendingTenantsQuery, useGetTenantByHostelQuery, useGetTenantsQuery, useGetYourHostelsQuery } from '@/api/apiSlice';
 import { Button, Card, Select, Input, Text, Loader } from '@mantine/core';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -17,9 +17,9 @@ interface Tenant {
 }
 
 const TenantsPage = () => {
-  const { data: hostels, isLoading: hostelsloading } = useGetHostelsQuery()
-
+  
   const router = useRouter()
+  const { data: hostels, isLoading: hostelsloading } = useGetYourHostelsQuery(undefined)
   const [selectedHostel, setSelectedHostel] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const { data: rooms, isLoading: isRoomsloading } = useGetHostelRoomsQuery(selectedHostel ? selectedHostel : '')

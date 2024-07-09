@@ -22,7 +22,7 @@ export const SignupForm = () => {
     validate: {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
       password: (value) => (value.length > 6 ? null : 'Password must be at least 7 characters'),
-      contact_no: (value) => (/^\d+$/.test(value) ? null : 'Contact number must be digits only'),
+      contact_no: (value) => (value > 999999999 ? null : 'Contact number must be 10 digits only'),
     },
   });
 
