@@ -6,6 +6,7 @@ const baseUrl = 'https://prakhar2004.pythonanywhere.com/'; // Replace with your 
 const prepareHeaders = (headers: Headers) => {
   const token = localStorage.getItem('token');
   if (token) {
+    console.log(token)
     headers.set('Authorization', `Bearer ${token}`);
   }
   return headers;
@@ -110,7 +111,7 @@ export const apiSlice = createApi({
 
     // Hostel Endpoints
     getYourHostels: builder.query({
-      query: () => `api/hostels/`,
+      query: () => 'api/hostels/',
     }),
 
     getHostelById: builder.query({

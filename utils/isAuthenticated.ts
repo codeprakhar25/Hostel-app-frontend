@@ -1,3 +1,1 @@
-export function isAuth () {
-  return localStorage && localStorage.getItem('token') ? true : false;
-};
+export const isAuth = localStorage && localStorage.getItem('token') ? true : false;

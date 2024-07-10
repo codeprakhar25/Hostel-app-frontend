@@ -8,9 +8,9 @@ export const config = {
 const protectedRoutes = [
   '/:id/tenants',
   config,
-  '/home/*',
-  '/tenant/*',
-  '/collect-rent/*',
+  '/home',
+  '/tenant/',
+  '/collect-rent/',
   '/collect-rent/:id',
   '/'
 ]
