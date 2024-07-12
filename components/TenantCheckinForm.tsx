@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import { useForm } from '@mantine/form';
 import { Button, Group, Notification, NumberInput, Select, TextInput } from '@mantine/core';
-import { DatePicker, DatePickerInput } from '@mantine/dates';
-// import TextInput from './FormField';
-import { useCreateTenantMutation } from '@/api/apiSlice';  // Adjust this import as per your API slice setup
-import '@mantine/dates/styles.css'
+import { DatePickerInput } from '@mantine/dates';
+import { useCreateTenantMutation, useGetHostelRoomsQuery } from '@/api/apiSlice';  // Adjust this import as per your API slice setup
+import '@mantine/dates/styles.css';
 import { formatDate } from '@/utils/formatDate';
 import { useRouter } from 'next/navigation';
 
@@ -24,10 +23,11 @@ const RENT_FREQUENCY_CHOICES = [
 const TenantCheckInForm = ({ hostelId }: any) => {
   const [electricityOn, setElectricityOn] = useState(false);
   const [assetsOn, setAssetsOn] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
   const [notificationType, setNotificationType] = useState('success');
+  const { data: rooms, isLoading: isRoomsLoading, error: roomsError } = useGetHostelRoomsQuery(hostelId);
   const [createTenant, { isLoading }] = useCreateTenantMutation();
   const form = useForm({
     initialValues: {
@@ -50,7 +50,7 @@ const TenantCheckInForm = ({ hostelId }: any) => {
       asset_unit: '',
       start_date: null,
       rent_frequency: '',
-      next_due_date:null,
+      next_due_date: null,
     },
     validate: {
       name: (value) => (value ? null : 'Name is required'),
@@ -65,7 +65,7 @@ const TenantCheckInForm = ({ hostelId }: any) => {
     try {
       await createTenant({
         ...values,
-        hostel_id : hostelId,
+        hostel_id: hostelId,
         start_date: formatDate(values.start_date), // Convert to string for backend
         next_due_date: formatDate(values.next_due_date), // Convert to string for backend
       }).unwrap();
@@ -76,7 +76,7 @@ const TenantCheckInForm = ({ hostelId }: any) => {
 
       // Reset form after successful submission
       form.reset();
-      router.push(`/${hostelId}/tenants`)
+      router.push(`/${hostelId}/tenants`);
     } catch (error) {
       setNotificationMessage('Error checking in tenant');
       setNotificationType('error');
@@ -105,6 +105,64 @@ const TenantCheckInForm = ({ hostelId }: any) => {
         style={{ marginTop: 15 }}
         {...form.getInputProps('phone_number')}
       />
+      <NumberInput
+        label="Rent Amount"
+        name="rent_amount"
+        placeholder="Enter Rent Amount"
+        required
+        error={form.errors.rent_amount}
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('rent_amount')}
+      />
+      <DatePickerInput
+        placeholder="Pick a date"
+        required
+        label="Start Date"
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('start_date')}
+      />
+      {form.errors.start_date && (
+        <div className="text-red-500 text-sm mt-1">{form.errors.start_date}</div>
+      )}
+      <Select
+        label="Rent Frequency"
+        name="rent_frequency"
+        placeholder="Select Rent Frequency"
+        required
+        error={form.errors.rent_frequency}
+        data={RENT_FREQUENCY_CHOICES.map((value) => ({ value, label: value.charAt(0).toUpperCase() + value.slice(1).replace('_', ' ') }))}
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('rent_frequency')}
+      />
+      <NumberInput
+        label="Deposit Amount"
+        required
+        name="deposit_amount"
+        placeholder="Enter Deposit Amount"
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('deposit_amount')}
+      />
+      <Select
+          data={rooms && rooms.map((hostel: { id: { toString: () => any; }; room_number: any; }) => ({ value: hostel.id.toString(), label: `Room ${hostel.room_number}` }))}
+          label="Select Room"
+          required
+          placeholder='Select a Room'
+          {...form.getInputProps('room')}
+          classNames={{
+            root: 'border rounded-md mt-4',
+            input: 'p-2',
+          }}
+        />
+<DatePickerInput
+        placeholder="Pick a date"
+        label="Next Due Date"
+        required
+        style={{ marginTop: 15 }}
+        {...form.getInputProps('next_due_date')}
+      />
+      {form.errors.next_due_date && (
+        <div className="text-red-500 text-sm mt-1">{form.errors.next_due_date}</div>
+      )}
       <NumberInput
         label="Aadhar Number"
         name="aadhar_number"
@@ -150,75 +208,18 @@ const TenantCheckInForm = ({ hostelId }: any) => {
         {...form.getInputProps('mother_phone_number')}
       />
       <NumberInput
-        label="Rent Amount"
-        name="rent_amount"
-        placeholder="Enter Rent Amount"
-        required
-        error={form.errors.rent_amount}
-        style={{ marginTop: 15 }}
-        {...form.getInputProps('rent_amount')}
-      />
-      <NumberInput
-        label="Deposit Amount"
-        name="deposit_amount"
-        placeholder="Enter Deposit Amount"
-        style={{ marginTop: 15 }}
-        {...form.getInputProps('deposit_amount')}
-      />
-      <TextInput
-        label="Room"
-        name="room"
-        type="text"
-        placeholder="Enter Room Number"
-        style={{ marginTop: 15 }}
-        {...form.getInputProps('room')}
-      />
-      <NumberInput
         label="Bed Number"
         name="bed_number"
         placeholder="Enter Bed Number"
         style={{ marginTop: 15 }}
         {...form.getInputProps('bed_number')}
       />
-      <div className="mb-4 mt-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">Start Date</label>
-        <DatePickerInput
-          placeholder="Pick a date" required
-          style={{ marginTop: 15 }}         
-          {...form.getInputProps('start_date')}
-        />
-        {form.errors.start_date && (
-          <div className="text-red-500 text-sm mt-1">{form.errors.start_date}</div>
-        )}
-      </div>
-      <div className="mb-4 mt-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">Next Due Date</label>
-        <DatePickerInput
-          placeholder="Pick a date" required
-          style={{ marginTop: 15 }}         
-          {...form.getInputProps('next_due_date')}
-        />
-        {form.errors.next_due_date && (
-          <div className="text-red-500 text-sm mt-1">{form.errors.next_due_date}</div>
-        )}
-      </div>
-      <Select
-        label="Rent Frequency"
-        name="rent_frequency"
-        placeholder="Select Rent Frequency"
-        required
-        error={form.errors.rent_frequency}
-        data={RENT_FREQUENCY_CHOICES.map((value) => ({ value, label: value.charAt(0).toUpperCase() + value.slice(1).replace('_', ' ') }))}
-        style={{ marginTop: 15 }}
-        {...form.getInputProps('rent_frequency')}
-      />
+      
       <div className="flex items-center justify-between my-4">
-
         <Button className={`bg-${electricityOn ? 'blue' : 'gray'}-500 text-white`} onClick={() => setElectricityOn(!electricityOn)}>
           Add Electricity
         </Button>
       </div>
-
       {electricityOn && (
         <>
           <TextInput
@@ -226,26 +227,24 @@ const TenantCheckInForm = ({ hostelId }: any) => {
             name="electricity_reading"
             type="text"
             placeholder="Enter Current Reading"
-
-            style={{ marginTop: 15 }}         {...form.getInputProps('electricity_reading')}
+            style={{ marginTop: 15 }}
+            {...form.getInputProps('electricity_reading')}
           />
           <TextInput
             label="PPU"
             name="electricity_ppu"
             type="text"
             placeholder="Enter PPU"
-
-            style={{ marginTop: 15 }}         {...form.getInputProps('electricity_ppu')}
+            style={{ marginTop: 15 }}
+            {...form.getInputProps('electricity_ppu')}
           />
         </>
       )}
-
       <div className="flex items-center justify-between my-4">
         <Button className={`bg-${assetsOn ? 'blue' : 'gray'}-500 text-white`} onClick={() => setAssetsOn(!assetsOn)}>
           Add Assets
         </Button>
       </div>
-
       {assetsOn && (
         <>
           <TextInput
@@ -253,7 +252,7 @@ const TenantCheckInForm = ({ hostelId }: any) => {
             name="asset_name"
             type="text"
             placeholder="Enter Asset Name"
-            style={{ marginTop: 15 }}         
+            style={{ marginTop: 15 }}
             {...form.getInputProps('asset_name')}
           />
           <TextInput
@@ -261,18 +260,16 @@ const TenantCheckInForm = ({ hostelId }: any) => {
             name="asset_unit"
             type="text"
             placeholder="Enter Asset Unit"
-            style={{ marginTop: 15 }}         
+            style={{ marginTop: 15 }}
             {...form.getInputProps('asset_unit')}
           />
         </>
       )}
-
       <Group align="center" w={'screen'}>
         <Button type="submit" className="bg-blue-500 text-white align-middle" disabled={isLoading}>
           {isLoading ? 'Submitting...' : 'CHECK IN'}
         </Button>
       </Group>
-
       {showNotification && (
         <div className="fixed bottom-4 right-4">
           <Notification

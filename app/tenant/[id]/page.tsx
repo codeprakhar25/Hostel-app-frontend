@@ -11,7 +11,6 @@ const TenantCard = () => {
   const { id } = useParams();
   const router=useRouter()
   const { data: tenantInfo, isLoading, error } = useGetTenantByIdQuery(id);
-  const { data: roomInfo,error: roomerror } = useGetRoomByIdQuery(tenantInfo ? tenantInfo.room : '');
   const [opened, setOpened] = useState(false);
   const [vacated, setVacated] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
@@ -42,7 +41,7 @@ const TenantCard = () => {
           objectFit='contain'
         />
         <h2 className="text-center mt-2 font-bold text-lg">{tenantInfo.name}</h2>
-        <p className="text-center">Room: {roomInfo?.room_number} • Floor: {roomInfo?.room_floor}</p>
+        <p className="text-center">Room: {tenantInfo?.room?.room_number} • Floor: {tenantInfo?.room?.room_floor}</p>
         <p className="text-center text-xl font-semibold my-2">Amount: ₹{tenantInfo.rent_amount}</p>
         <div className="flex justify-around my-4">
           <Button variant="outline" onClick={handleSeeDocument}>See Document</Button>

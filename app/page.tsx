@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useGetHostelRoomsQuery, useGetPendingTenantsQuery, useGetTenantByHostelQuery, useGetYourHostelsQuery } from '@/api/apiSlice';
-import { Button, Card, Select, Input, Text, Loader } from '@mantine/core';
+import { Button, Card, Select, Input, Text } from '@mantine/core';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Spinner } from '@/components/Spinner';
@@ -19,11 +19,11 @@ interface Tenant {
 const TenantsPage = () => {
   const router = useRouter();
   const { data: hostels, isLoading: hostelsLoading, error: hostelsError } = useGetYourHostelsQuery(undefined);
-  const [selectedHostel, setSelectedHostel] = useState<string | null>(null);
+  const [selectedHostel, setSelectedHostel] = useState<any>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const { data: rooms, isLoading: isRoomsLoading, error: roomsError } = useGetHostelRoomsQuery(selectedHostel || '');
-  const { data: tenants, isLoading: tenantsLoading, error: tenantsError } = useGetTenantByHostelQuery(selectedHostel || '');
-  const { data: pendingTenants, isLoading: pendingLoading, error: pendingError } = useGetPendingTenantsQuery(selectedHostel || '');
+  const { data: rooms, isLoading: isRoomsLoading, error: roomsError,isUninitialized } = useGetHostelRoomsQuery(selectedHostel, { skip: (selectedHostel.length <1) });
+  const { data: tenants, isLoading: tenantsLoading, error: tenantsError } = useGetTenantByHostelQuery(selectedHostel, { skip: (selectedHostel.length <1) });
+  const { data: pendingTenants, isLoading: pendingLoading, error: pendingError } = useGetPendingTenantsQuery(selectedHostel, { skip: (selectedHostel.length <1) });
   const [filteredTenants, setFilteredTenants] = useState<Tenant[]>([]);
 
   useEffect(() => {
@@ -63,41 +63,53 @@ const TenantsPage = () => {
     return 0;
   };
 
-  if (hostelsLoading || isRoomsLoading || tenantsLoading || pendingLoading) {
+  if (hostelsLoading || (selectedHostel && (isRoomsLoading || tenantsLoading || pendingLoading))) {
     return <Spinner />;
   }
 
-  if (hostelsError || roomsError || tenantsError || pendingError) {
+  if (hostelsError || (selectedHostel && (roomsError || tenantsError || pendingError))) {
     return <div>Error loading data</div>;
+  }
+
+  if (!hostels || hostels.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+        <IconSearchOff className="w-24 h-24 text-gray-500" />
+        <h2 className="text-3xl font-bold text-gray-700 mt-4">No hostels available</h2>
+        <p className="text-gray-600 mt-2">Please contact support for assistance.</p>
+        <Button className="mt-4 bg-blue-500 text-white py-2 px-4 rounded" onClick={() => router.push('/support')}>
+          Contact Support
+        </Button>
+      </div>
+    );
   }
 
   return (
     <div className="p-4 md:p-6">
       {/* Top Section */}
       <div className="flex justify-between items-center mb-4">
-        {hostels && hostels.length > 0 ? (
-          <Select
-            data={hostels.map((hostel: { id: { toString: () => any; }; name: any; }) => ({ value: hostel.id.toString(), label: `Hostel ${hostel.name}` }))}
-            value={selectedHostel}
-            placeholder='Select a Hostel'
-            onChange={setSelectedHostel}
-            classNames={{
-              root: 'border rounded-md',
-              input: 'p-2',
-            }}
-          />
-        ) : (
-          <Text>No hostels available</Text>
-        )}
+        <Select
+          data={hostels.map((hostel: { id: { toString: () => any; }; name: any; }) => ({ value: hostel.id.toString(), label: `Hostel ${hostel.name}` }))}
+          value={selectedHostel}
+          placeholder='Select a Hostel'
+          onChange={setSelectedHostel}
+          classNames={{
+            root: 'border rounded-md',
+            input: 'p-2',
+          }}
+        />
         <Button className="border p-2 rounded-md" onClick={() => router.push('/support')}>Support</Button>
       </div>
 
       {/* Hostel Information */}
       {selectedHostel && rooms ? (
-        <Card className="bg-green-100 p-4 rounded-md mb-4">
+        <Card className="bg-green-100 p-4 rounded-md mb-4 flex flex-row justify-between items-center">
+        <div>
           <Text className="text-lg font-bold">Hostel {hostels?.find((h: { id: { toString: () => string; }; }) => h.id.toString() === selectedHostel)?.name}</Text>
           <Text>{rooms.length} Rooms</Text>
-        </Card>
+        </div>
+        <Button color='indigo' className="text-white py-1 px-4 rounded" onClick={() => router.push(`/${selectedHostel}/add-room`)}>Add Rooms</Button>
+      </Card>
       ) : (
         <Text>Loading rooms...</Text>
       )}

@@ -94,10 +94,14 @@ const TenantsPage = () => {
 
       {/* Hostel Information */}
       {selectedHostel && rooms ? (
-        <Card className="bg-green-100 p-4 rounded-md mb-4">
+        <Card className="bg-green-100 p-4 rounded-md mb-4 flex flex-row justify-between items-center">
+        <div>
           <Text className="text-lg font-bold">Hostel {hostels?.find((h: { id: { toString: () => string; }; }) => h.id.toString() === selectedHostel)?.name}</Text>
           <Text>{rooms.length} Rooms</Text>
-        </Card>
+        </div>
+        <Button color='indigo' className="text-white py-1 px-4 rounded" onClick={() => router.push(`/${selectedHostel}/add-room`)}>Add Rooms</Button>
+      </Card>
+      
       ) : (
         <Text>Loading rooms...</Text>
       )}

@@ -16,6 +16,7 @@ const CollectRent = () => {
   const [collectRent] = useCollectRentMutation();
 
   const [rentDate, setRentDate] = useState<Date | null>(null);
+  const [dueDate, setDueDate] = useState<Date | null>(null);
   const [rentAmount, setRentAmount] = useState('');
   const [electricityAmount, setElectricityAmount] = useState('');
   const [waterAmount, setWaterAmount] = useState('');
@@ -37,6 +38,7 @@ const CollectRent = () => {
         tenant: id,
         amount: parseInt(rentAmount),
         date: formatDate(rentDate),
+        rent_due_date: dueDate ? formatDate(dueDate) : null,
         electricity_amount: parseInt(electricityAmount),
         water_amount: parseInt(waterAmount),
         rent_remaining: 0,
@@ -69,6 +71,18 @@ const CollectRent = () => {
             placeholder="Pick a date"
             value={rentDate}
             onChange={setRentDate}
+            classNames={{
+              label: 'text-black',
+              input: 'border-black focus:border-purple-500',
+            }}
+          />
+        </div>
+        <div className="mb-4">
+          <DatePickerInput
+            label="Select Next Due date(optional)"
+            placeholder="Pick a date"
+            value={dueDate}
+            onChange={setDueDate}
             classNames={{
               label: 'text-black',
               input: 'border-black focus:border-purple-500',

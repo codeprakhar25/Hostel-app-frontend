@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const baseUrl = 'https://prakhar2004.pythonanywhere.com/'; // Replace with your backend URL
@@ -6,7 +6,6 @@ const baseUrl = 'https://prakhar2004.pythonanywhere.com/'; // Replace with your 
 const prepareHeaders = (headers: Headers) => {
   const token = localStorage.getItem('token');
   if (token) {
-    console.log(token)
     headers.set('Authorization', `Bearer ${token}`);
   }
   return headers;
@@ -15,6 +14,7 @@ const prepareHeaders = (headers: Headers) => {
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({ baseUrl, prepareHeaders }),
+  tagTypes: ['Tenant', 'Hostel', 'Room', 'Rent', 'Attachment'],
   endpoints: (builder) => ({
     // Authentication Endpoints
     loginUser: builder.mutation({
@@ -34,49 +34,45 @@ export const apiSlice = createApi({
 
     // Tenant Endpoints
     getTenants: builder.query({
-      query: (searchParam? : string, filterTerm? : string, sortTerm? :string) => `api/tenants/?search`
-      ,
+      query: (searchParam?: string, filterTerm?: string, sortTerm?: string) => `api/tenants/?search`,
+      providesTags: ['Tenant'],
     }),
     getTenantById: builder.query({
       query: (id) => `api/tenants/${id}/`,
+      providesTags: (result, error, id) => [{ type: 'Tenant', id }],
     }),
     getTenantByHostel: builder.query({
       query: (hostelId) => `api/tenants/by_hostel/?hostel_id=${hostelId}`,
-      // transformResponse: (response: { results: any[] }) => response.results,
+      providesTags: ['Tenant'],
     }),
-
-    // Get tenants by room
     getTenantByRoom: builder.query({
       query: (roomId) => `api/tenants/by_room/?room_id=${roomId}`,
       transformResponse: (response: { results: any[] }) => response.results,
+      providesTags: ['Tenant'],
     }),
-
     getPendingTenants: builder.query({
       query: (hostelId) => `api/tenants/due-date-passed-by-hostel/?hostel_id=${hostelId}`,
+      providesTags: ['Tenant'],
     }),
-
-    // Get rents for a tenant
     getTenantRents: builder.query({
       query: (tenantId) => `api/tenants/${tenantId}/rents/`,
       transformResponse: (response: { results: any[] }) => response.results,
+      providesTags: ['Rent'],
     }),
-
-    // Get attachments for a tenant
     getTenantAttachments: builder.query({
       query: (tenantId) => `api/tenants/${tenantId}/attachments/`,
       transformResponse: (response: { results: any[] }) => response.results,
+      providesTags: ['Attachment'],
     }),
-
-    // Get all rents
     getRents: builder.query({
       query: () => '/rents/',
       transformResponse: (response: { results: any[] }) => response.results,
+      providesTags: ['Rent'],
     }),
-
-    // Get all attachments
     getAttachments: builder.query({
       query: () => '/attachments/',
       transformResponse: (response: { results: any[] }) => response.results,
+      providesTags: ['Attachment'],
     }),
     createTenant: builder.mutation({
       query: (newTenant: any) => ({
@@ -84,6 +80,7 @@ export const apiSlice = createApi({
         method: 'POST',
         body: newTenant,
       }),
+      invalidatesTags: ['Tenant'],
     }),
     updateTenant: builder.mutation({
       query: ({ id, data }: { id: string; data: Record<string, any> }) => ({
@@ -91,31 +88,34 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: data,
       }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Tenant', id }],
     }),
     deleteTenant: builder.mutation({
       query: (id: string) => ({
         url: `api/tenants/${id}/`,
         method: 'DELETE',
       }),
+      invalidatesTags: (result, error, id) => [{ type: 'Tenant', id }],
     }),
 
-
-    // Rent
+    // Rent Endpoints
     collectRent: builder.mutation({
       query: (data) => ({
         url: `api/rents/`,
         method: 'POST',
         body: data,
       }),
+      invalidatesTags: ['Rent'],
     }),
 
     // Hostel Endpoints
     getYourHostels: builder.query({
       query: () => 'api/hostels/',
+      providesTags: ['Hostel'],
     }),
-
     getHostelById: builder.query({
       query: (id: string) => `api/hostels/${id}/`,
+      providesTags: (result, error, id) => [{ type: 'Hostel', id }],
     }),
     createHostel: builder.mutation({
       query: (newHostel: { name: string; location: string; owner: string }) => ({
@@ -123,6 +123,7 @@ export const apiSlice = createApi({
         method: 'POST',
         body: newHostel,
       }),
+      invalidatesTags: ['Hostel'],
     }),
     updateHostel: builder.mutation({
       query: ({ id, data }: { id: string; data: Record<string, any> }) => ({
@@ -130,12 +131,14 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: data,
       }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Hostel', id }],
     }),
     deleteHostel: builder.mutation({
       query: (id: string) => ({
         url: `api/hostels/${id}/`,
         method: 'DELETE',
       }),
+      invalidatesTags: (result, error, id) => [{ type: 'Hostel', id }],
     }),
 
     // Room Endpoints
@@ -147,16 +150,19 @@ export const apiSlice = createApi({
         if (sort) searchParams.append('ordering', sort);
         return { url: `api/rooms/?${searchParams.toString()}` };
       },
+      providesTags: ['Room'],
     }),
     getRoomById: builder.query({
       query: (id: string) => `api/rooms/${id}/`,
+      providesTags: (result, error, id) => [{ type: 'Room', id }],
     }),
     createRoom: builder.mutation({
-      query: (newRoom: { number: string; hostel: string; capacity: number }) => ({
+      query: (newRoom: any) => ({
         url: 'api/rooms/',
         method: 'POST',
         body: newRoom,
       }),
+      invalidatesTags: ['Room'],
     }),
     updateRoom: builder.mutation({
       query: ({ id, data }: { id: string; data: Record<string, any> }) => ({
@@ -164,15 +170,18 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: data,
       }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Room', id }],
     }),
     getHostelRooms: builder.query({
       query: (id: string) => `api/hostels/${id}/rooms/`,
+      providesTags: (result, error, id) => [{ type: 'Room', id }],
     }),
     deleteRoom: builder.mutation({
       query: (id: string) => ({
         url: `api/rooms/${id}/`,
         method: 'DELETE',
       }),
+      invalidatesTags: (result, error, id) => [{ type: 'Room', id }],
     }),
   }),
 });
